@@ -17,6 +17,8 @@ app.use("/", bodyParser.urlencoded({extended: false}));
 //---------------------------------------------------------------------------------//
 //----------------- RESTFull API'S ------------------------------------------------//
 //---------------------------------------------------------------------------------//
+
+//-------------------- GET API'S ------------------------------------------------//
 // Get all todos
 app.get("/api/todos", function (req, res) {
     res.json(todo_db.todos);
@@ -55,22 +57,6 @@ app.get("/api/todos/deleted", function(req, res){
     res.json(active_todos);
 });
 
-// add a Todo
-app.post("/api/todos", function(req, res){
-    var todo = req.body.todo_title;
-    if(!todo || todo==="" || todo.trim()===""){
-        res.status(400).json({ error: "Todo title can't be empty"});
-    }
-    else{
-        var new_todo_object = {
-            title: todo,
-            status: todo_db.statusENUMS.ACTIVE
-        };
-        todo_db.todos[todo_db.next_todo_id++] = new_todo_object;
-        res.json(todo_db.todos);
-    }
-});
-
 // get a todo
 app.get("/api/todos/:id", function(req, res){
     var id = req.params.id;
@@ -84,6 +70,23 @@ app.get("/api/todos/:id", function(req, res){
     }
 });
 
+//---------------------POST API'S---------------------------------------------------//
+// add a Todo
+app.post("/api/todos", function(req, res){
+    var todo = req.body.todo_title;
+    if(!todo || todo==="" || todo.trim()===""){
+        res.status(400).json({ error: "Todo title can't be empty"});
+    }
+    else{
+        todo_db.todos[todo_db.next_todo_id++] = {
+            title: todo,
+            status: todo_db.statusENUMS.ACTIVE
+        };
+        res.json(todo_db.todos);
+    }
+});
+
+//----------------------PUT API'S--------------------------------------------------------//
 // update a todo
 app.put("/api/todos/:id", function(req, res){
     var id = req.params.id;
@@ -113,6 +116,8 @@ app.put("/api/todos/:id", function(req, res){
     }
 });
 
+
+// Change the status of todo to complete
 app.put("/api/todos/complete/:id", function (req, res) {
     var id = req.params.id;
     var todo = todo_db.todos[id];
@@ -126,6 +131,7 @@ app.put("/api/todos/complete/:id", function (req, res) {
     }
 });
 
+// Change the status of todo to DELETED
 app.put("/api/todos/delete/:id", function (req, res) {
     var id = req.params.id;
     var todo = todo_db.todos[id];
@@ -139,6 +145,7 @@ app.put("/api/todos/delete/:id", function (req, res) {
     }
 });
 
+//-----------------------DELETE API'S ---------------------------------------------//
 // delete a todo
 app.delete("/api/todos/:id", function(req, res){
     var id = req.params.id;
