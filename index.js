@@ -14,27 +14,48 @@ app.use("/", express.static(__dirname + "/public"));
 
 app.use("/", bodyParser.urlencoded({extended: false}));
 
-// Check if todo with the given id exists
-app.use("/api/todos/:id", function(req, res, next){
-    var id = req.params.id;
-    var todo = todo_db.todos[id];
-    if(!todo){
-        res.status(400);
-        res.json({error : "Todo doesn't exist"});
-    }
-    next();
-});
-
 //---------------------------------------------------------------------------------//
 //----------------- RESTFull API'S ------------------------------------------------//
 //---------------------------------------------------------------------------------//
-// get all todos
-// GET http://localhost:4000/todos
+// Get all todos
 app.get("/api/todos", function (req, res) {
     res.json(todo_db.todos);
 });
 
-// add a todo
+// Get all todos with status ACTIVE
+app.get("/api/todos/active", function(req, res){
+    var active_todos = [];
+    for(var todo_id in todo_db.todos){
+        if(todo_db.todos[todo_id].status === todo_db.statusENUMS.ACTIVE){
+            active_todos.push(todo_db.todos[todo_id]);
+        }
+    }
+    res.json(active_todos);
+});
+
+// Get all todos with status COMPLETED
+app.get("/api/todos/completed", function(req, res){
+    var active_todos = [];
+    for(var todo_id in todo_db.todos){
+        if(todo_db.todos[todo_id].status === todo_db.statusENUMS.COMPLETE){
+            active_todos.push(todo_db.todos[todo_id]);
+        }
+    }
+    res.json(active_todos);
+});
+
+// Get all todos with status DELETED
+app.get("/api/todos/deleted", function(req, res){
+    var active_todos = [];
+    for(var todo_id in todo_db.todos){
+        if(todo_db.todos[todo_id].status === todo_db.statusENUMS.DELETED){
+            active_todos.push(todo_db.todos[todo_id]);
+        }
+    }
+    res.json(active_todos);
+});
+
+// add a Todo
 app.post("/api/todos", function(req, res){
     var todo = req.body.todo_title;
     if(!todo || todo==="" || todo.trim()===""){
@@ -52,37 +73,84 @@ app.post("/api/todos", function(req, res){
 
 // get a todo
 app.get("/api/todos/:id", function(req, res){
-    var todo = todo_db.todos[req.params.id];
-    res.json(todo);
+    var id = req.params.id;
+    var todo = todo_db.todos[id];
+    if(!todo){
+        res.status(400);
+        res.json({error : "Todo doesn't exist"});
+    }
+    else {
+        res.json(todo);
+    }
 });
 
 // update a todo
 app.put("/api/todos/:id", function(req, res){
-    var todo = todo_db.todos[req.params.id];
-    var todo_title = req.body.todo_title;
-
-    if(todo_title && todo_title!=="" && todo_title.trim()!== ""){
-        todo.title = todo_title;
+    var id = req.params.id;
+    var todo = todo_db.todos[id];
+    if(!todo){
+        res.status(400);
+        res.json({error : "Todo doesn't exist"});
     }
+    else {
+        var todo_title = req.body.todo_title;
 
-    var todo_status = req.body.todo_status;
+        if (todo_title && todo_title !== "" && todo_title.trim() !== "") {
+            todo.title = todo_title;
+        }
 
-    if(todo_status &&
-        (todo_status===todo_db.statusENUMS.ACTIVE ||
-            todo_status===todo_db.statusENUMS.COMPLETE ||
-            todo_status===todo_db.statusENUMS.DELETED)
-    ){
-        todo.status = todo_status;
+        var todo_status = req.body.todo_status;
+
+        if (todo_status &&
+            (todo_status === todo_db.statusENUMS.ACTIVE ||
+                todo_status === todo_db.statusENUMS.COMPLETE ||
+                todo_status === todo_db.statusENUMS.DELETED)
+        ) {
+            todo.status = todo_status;
+        }
+
+        res.json(todo_db.todos);
     }
+});
 
-    res.json(todo_db.todos);
+app.put("/api/todos/complete/:id", function (req, res) {
+    var id = req.params.id;
+    var todo = todo_db.todos[id];
+    if(!todo){
+        res.status(400);
+        res.json({error : "Todo doesn't exist"});
+    }
+    else {
+        todo.status = todo_db.statusENUMS.COMPLETE;
+        res.json(todo_db.todos);
+    }
+});
+
+app.put("/api/todos/delete/:id", function (req, res) {
+    var id = req.params.id;
+    var todo = todo_db.todos[id];
+    if(!todo){
+        res.status(400);
+        res.json({error : "Todo doesn't exist"});
+    }
+    else {
+        todo.status = todo_db.statusENUMS.DELETED;
+        res.json(todo_db.todos);
+    }
 });
 
 // delete a todo
 app.delete("/api/todos/:id", function(req, res){
-    var todo = todo_db.todos[req.params.id];
-    todo.status = todo_db.statusENUMS.DELETED;
-    res.json(todo_db.todos);
+    var id = req.params.id;
+    var todo = todo_db.todos[id];
+    if(!todo){
+        res.status(400);
+        res.json({error : "Todo doesn't exist"});
+    }
+    else {
+        todo.status = todo_db.statusENUMS.DELETED;
+        res.json(todo_db.todos);
+    }
 });
 
 //------------------------------------------------------------------------------------//
